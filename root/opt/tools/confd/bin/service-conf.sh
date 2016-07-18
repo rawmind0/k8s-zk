@@ -16,10 +16,10 @@ function checkNetwork {
     done
 
     log "[ Checking container connectivity... ]"
-    b="`fping -c 1 rancher-metadata.rancher.internal &> /dev/null; echo $?`"
+    b="`fping -c 1 kubernetes. &> /dev/null; echo $?`"
     while [ $b -eq 1 ]; 
     do
-        b="`fping -c 1 rancher-metadata.rancher.internal &> /dev/null; echo $?`"
+        b="`fping -c 1 kubernetes. &> /dev/null; echo $?`"
         sleep 1 
     done
 }
@@ -54,8 +54,10 @@ CONF_LOG=${CONF_LOG:-"${CONF_HOME}/log/confd.log"}
 CONF_BIN=${CONF_BIN:-"${CONF_HOME}/bin/confd"}
 CONF_BACKEND=${CONF_BACKEND:-"etcd"}
 CONF_PREFIX=${CONF_PREFIX:-"/registry"}
-CONF_NODE=${CONF_NODE:-"etcd.kubernetes.rancher.internal:2379"}
-CONF_INTERVAL=${CONF_INTERVAL:-"watch"}
+CONF_NODE_NAME=${CONF_NODE_NAME:-"etcd.kubernetes."}
+CONF_NODE_IP=$(fping -A ${CONF_NODE_NAME} | grep alive | cut -d" " -f1)
+CONF_NODE=${CONF_NODE:-"${CONF_NODE_IP}:2379"}
+CONF_INTERVAL=${CONF_INTERVAL:-"-watch"}
 CONF_PARAMS=${CONF_PARAMS:-"-confdir /opt/tools/confd/etc -backend ${CONF_BACKEND} -prefix ${CONF_PREFIX} -node ${CONF_NODE}"}
 CONF_INTERVAL="${CONF_BIN} ${CONF_INTERVAL} ${CONF_PARAMS}"
 
