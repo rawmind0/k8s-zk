@@ -18,17 +18,17 @@ maxClientCnxns=${ZK_MAX_CLIENT_CXNS}
 clientPort=2181
 autopurge.snapRetainCount=3
 autopurge.purgeInterval=1
-{{- \$data := json (getv \"/services/endpoints/default/${ZK_RC_NAME}\") -}}
+{{- \$data := json (getv "/services/endpoints/default/${ZK_RC_NAME}") -}}
 {{- range \$i, \$subset := \$data.subsets -}}
     {{ range \$subset.addresses }}
-server.{{ index (split .ip \".\") 3 }}={{.ip}}
+server.{{ index (split .ip ".") 3 }}={{.ip}}
     	{{- range \$subset.ports -}}
-        	{{- if eq .name \"zk-server\" -}}
+        	{{- if eq .name "zk-server" -}}
             	:{{.port}}
         	{{- end -}}
     	{{- end -}}
     	{{- range \$subset.ports -}}
-        	{{- if eq .name \"zk-leader\" -}}
+        	{{- if eq .name "zk-leader" -}}
             	:{{.port}}
         	{{- end -}}
     	{{- end -}}
