@@ -1,0 +1,8 @@
+[template]
+src = "myid.tmpl"
+dest = "/opt/zk/data/myid"
+owner = "zookeeper"
+mode = "0644"
+keys = [
+  "/",
+]

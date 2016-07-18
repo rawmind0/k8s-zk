@@ -1,0 +1,3 @@
+{{- $hostname := getenv "HOSTNAME" -}}
+{{- $data := json (getv (printf "/pods/default/%s" $hostname)) -}}
+{{ index (split $data.status.podIP ".") 3 }}
