@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+SERVICE_VOLUME=${SERVICE_VOLUME:-"/opt/tools"}
+
 function log {
         echo `date` $ME - $@ >> ${CONF_LOG}
 }
