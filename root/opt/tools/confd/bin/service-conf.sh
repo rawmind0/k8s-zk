@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -e
-
 function log {
         echo `date` $ME - $@ >> ${CONF_LOG}
 }
