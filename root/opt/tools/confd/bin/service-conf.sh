@@ -26,7 +26,7 @@ function checkNetwork {
 
 function serviceTemplate {
     log "[ Checking ${CONF_NAME} template... ]"
-    bash ${CONF_HOME}/bin/zoo.cfg.tmpl.sh
+    bash ${CONF_HOME}/bin/gen.conf.tmpl.sh
 }
 
 function serviceStart {
@@ -49,7 +49,7 @@ function serviceRestart {
 }
 
 CONF_NAME=confd
-CONF_HOME=${CONF_HOME:-"/opt/tools/confd"}
+export CONF_HOME=${CONF_HOME:-"${SERVICE_VOLUME}/confd"}
 CONF_LOG=${CONF_LOG:-"${CONF_HOME}/log/confd.log"}
 CONF_BIN=${CONF_BIN:-"${CONF_HOME}/bin/confd"}
 CONF_BACKEND=${CONF_BACKEND:-"etcd"}
