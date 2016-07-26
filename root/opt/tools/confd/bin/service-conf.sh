@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function log {
-        echo `date` $ME - $@
+        echo `date` $ME - $@ >> ${CONF_LOG} 2>&1
 }
 
 function checkNetwork {
@@ -57,11 +57,11 @@ function serviceRestart {
 
 CONF_NAME=confd
 export CONF_HOME=${CONF_HOME:-"${SERVICE_VOLUME}/confd"}
-CONF_LOG=${CONF_LOG:-"${CONF_HOME}/log/confd.log"}
+export CONF_LOG=${CONF_LOG:-"${CONF_HOME}/log/confd.log"}
 CONF_BIN=${CONF_BIN:-"${CONF_HOME}/bin/confd"}
 CONF_BACKEND=${CONF_BACKEND:-"etcd"}
 CONF_PREFIX=${CONF_PREFIX:-"/registry"}
-CONF_NODE_NAME=${CONF_NODE_NAME:-"etcd.kubernetes."}
+export CONF_NODE_NAME=${CONF_NODE_NAME:-"etcd.kubernetes."}
 export CONF_NODE_IP=$(fping -A ${CONF_NODE_NAME} | grep alive | cut -d" " -f1)
 CONF_NODE=${CONF_NODE:-"${CONF_NODE_IP}:2379"}
 CONF_INTERVAL=${CONF_INTERVAL:-"-watch"}
