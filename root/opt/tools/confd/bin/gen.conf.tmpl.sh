@@ -6,10 +6,6 @@ ZK_MAX_CLIENT_CXNS=${ZK_MAX_CLIENT_CXNS:-"500"}
 ZK_SYNC_LIMIT=${ZK_SYNC_LIMIT:-"5"}
 ZK_TICK_TIME=${ZK_TICK_TIME:-"2000"}
 
-RC_NAME=$(echo $HOSTNAME | cut -d"-" -f1)
-POD_NAME=$(echo $HOSTNAME)
-POD_NAMESPACE=${POD_NAMESPACE:-"default"}
-
 cat << EOF > ${CONF_HOME}/etc/conf.d/myid.toml
 [template]
 src = "myid.tmpl"
@@ -23,7 +19,7 @@ EOF
 
 cat << EOF > ${CONF_HOME}/etc/templates/myid.tmpl
 {{- \$data := json (getv "/pods/${POD_NAMESPACE}/${POD_NAME}") -}}
-{{ index (split \$data.status.podIP ".") 3 }}
+{{\$data.metadata.labels.zkid}}
 EOF
 
 cat << EOF > ${CONF_HOME}/etc/conf.d/zoo.cfg.toml
@@ -50,8 +46,8 @@ autopurge.snapRetainCount=3
 autopurge.purgeInterval=1
 {{- \$data := json (getv "/services/endpoints/${POD_NAMESPACE}/${RC_NAME}") -}}
 {{- range \$i, \$subset := \$data.subsets -}}
-    {{ range \$subset.addresses }}
-server.{{ index (split .ip ".") 3 }}={{.ip}}
+    {{ range \$subset.addresses }}{{ \$pod_data := json (getv (printf "/pods/%s/%s" .targetRef.namespace .targetRef.name)) }}
+server.{{ \$pod_data.metadata.labels.zkid }}={{.ip}} 
         {{- range \$subset.ports -}}
             {{- if eq .name "zk-server" -}}
                 :{{.port}}

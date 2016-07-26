@@ -1,4 +1,4 @@
-FROM rawmind/k8s-tools:0.3.4-4
+FROM rawmind/k8s-tools:0.3.4-5
 MAINTAINER Raul Sanchez <rawmind@gmail.com>
 
 #Set environment
@@ -12,5 +12,5 @@ ENV SERVICE_NAME=zk \
 
 # Add files
 ADD root /
-RUN cd ${SERVICE_VOLUME} \
-  && tar czvf ${SERVICE_ARCHIVE} * ; rm -rf ${SERVICE_VOLUME}/* 
+RUN cd ${SERVICE_VOLUME} && \
+    tar czvf ${SERVICE_ARCHIVE} * ; rm -rf ${SERVICE_VOLUME}/* 

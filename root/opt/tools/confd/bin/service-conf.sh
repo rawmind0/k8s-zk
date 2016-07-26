@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
-SERVICE_VOLUME=${SERVICE_VOLUME:-"/opt/tools"}
-
 function log {
-        echo `date` $ME - $@ >> ${CONF_LOG}
+        echo `date` $ME - $@
 }
 
 function checkNetwork {
@@ -24,6 +22,14 @@ function checkNetwork {
     done
 }
 
+function serviceBootstrap {
+    log "[ Bootstraping ${SERVICE_NAME} template... ]"
+
+    source ${SERVICE_VOLUME}/scripts/bootstrap.sh
+
+    bootstrapZk
+}
+
 function serviceTemplate {
     log "[ Checking ${CONF_NAME} template... ]"
     bash ${CONF_HOME}/bin/gen.conf.tmpl.sh
@@ -31,6 +37,7 @@ function serviceTemplate {
 
 function serviceStart {
     checkNetwork
+    serviceBootstrap
     serviceTemplate
     log "[ Starting ${CONF_NAME}... ]"
     /usr/bin/nohup ${CONF_INTERVAL} > ${CONF_HOME}/log/confd.log 2>&1 &
@@ -55,7 +62,7 @@ CONF_BIN=${CONF_BIN:-"${CONF_HOME}/bin/confd"}
 CONF_BACKEND=${CONF_BACKEND:-"etcd"}
 CONF_PREFIX=${CONF_PREFIX:-"/registry"}
 CONF_NODE_NAME=${CONF_NODE_NAME:-"etcd.kubernetes."}
-CONF_NODE_IP=$(fping -A ${CONF_NODE_NAME} | grep alive | cut -d" " -f1)
+export CONF_NODE_IP=$(fping -A ${CONF_NODE_NAME} | grep alive | cut -d" " -f1)
 CONF_NODE=${CONF_NODE:-"${CONF_NODE_IP}:2379"}
 CONF_INTERVAL=${CONF_INTERVAL:-"-watch"}
 CONF_PARAMS=${CONF_PARAMS:-"-confdir /opt/tools/confd/etc -backend ${CONF_BACKEND} -prefix ${CONF_PREFIX} -node ${CONF_NODE}"}
