@@ -11,10 +11,6 @@ export POD_NAMESPACE=${POD_NAMESPACE:-"default"}
 export RC_NAME=${RC_NAME:-$(echo $HOSTNAME | cut -d"-" -f1)}
 export RC_LOCK_NAME=${RC_LOCK_NAME:-${RC_NAME}"_ZKLOCK"}
 
-function log {
-        echo `date` $ME - $@
-}
-
 function myZkid {
     curl -Ss ${CONF_URL}/pods/${POD_NAMESPACE}/${HOSTNAME} | ${JQ_BIN} .node.value | ${JQ_BIN} ${LABEL_ID}
 }
@@ -40,7 +36,7 @@ EOF
 }
 
 function getLock {
-    log "[ Getting ZKLOCK ... ]"
+    log "[ Getting ZKLOCK ... ]" 
     resp=$(curl -Ss ${CONF_URL}/controllers/${POD_NAMESPACE}/${RC_LOCK_NAME}?prevExist=false -XPUT -d value=${HOSTNAME} -d ttl=30)
     error=$(echo $resp | ${JQ_BIN} .errorCode)
     counter=0
@@ -98,7 +94,6 @@ function newZkid {
 
 function waitDeploy {
     log "[ Waiting replicas to be started ... ]"
-
     current_rep=$(curl -Ss ${CONF_URL}/controllers/${POD_NAMESPACE}/${RC_NAME} | ${JQ_BIN} .node.value | ${JQ_BIN} .status.replicas)
     wanted_rep=$(curl -Ss ${CONF_URL}/controllers/${POD_NAMESPACE}/${RC_NAME} | ${JQ_BIN} .node.value | ${JQ_BIN} .spec.replicas)
 
@@ -126,7 +121,4 @@ function bootstrapZk {
         echo $myid
     fi
 }
-
-waitDeploy
-newZkid
 
