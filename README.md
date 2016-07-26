@@ -11,7 +11,7 @@ docker build -t rawmind/k8s-zk:<version> .
 
 ## Versions
 
-- `3.4.8-6` [(Dockerfile)](https://github.com/rawmind0/k8s-zk/blob/3.4.8-6/README.md)
+- `3.4.8-7` [(Dockerfile)](https://github.com/rawmind0/k8s-zk/blob/3.4.8-7/README.md)
 
 ## Usage
 
