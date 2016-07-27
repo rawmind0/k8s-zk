@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
 CONF_NODE_IP=${CONF_NODE_IP:-$(fping -A etcd.kubernetes. | grep alive | cut -d" " -f1)}
+MONIT_SERVICE_NAME=zk-service
+CONF_HOME=${CONF_HOME:-"${SERVICE_VOLUME}/confd"}
+CONF_LOG=${CONF_LOG:-"${CONF_HOME}/log/confd.log"}
 export CONF_URL="http://${CONF_NODE_IP}:2379/v2/keys/registry"
 export JQ_BIN=${JQ_BIN:-${SERVICE_VOLUME}"/scripts/jq -r"}
 export KUBE_TOKEN=$(</var/run/secrets/kubernetes.io/serviceaccount/token)
@@ -10,6 +13,10 @@ export POD_NAME=${POD_NAME:-$HOSTNAME}
 export POD_NAMESPACE=${POD_NAMESPACE:-"default"}
 export RC_NAME=${RC_NAME:-$(echo $HOSTNAME | cut -d"-" -f1)}
 export RC_LOCK_NAME=${RC_LOCK_NAME:-${RC_NAME}"_ZKLOCK"}
+
+function log {
+        echo `date` $ME - $@ >> ${CONF_LOG} 2>&1
+}
 
 function myZkid {
     curl -Ss ${CONF_URL}/pods/${POD_NAMESPACE}/${HOSTNAME} | ${JQ_BIN} .node.value | ${JQ_BIN} ${LABEL_ID}
@@ -103,6 +110,47 @@ function waitDeploy {
     done
 }
 
+function getLeader {
+    node_leader="none"
+
+    for i in $(curl -Ss ${CONF_URL}/services/endpoints/${POD_NAMESPACE}/${RC_NAME} | ${JQ_BIN} .node.value | ${JQ_BIN} .subsets[0].addresses[].ip)  
+    do 
+        node_role=$(echo stat | nc ${i}:2181 | grep -w Mode: | cut -d' ' -f2)
+        if [ "${node_role}" == "leader" ]; then
+            node_leader=${i}
+            break
+        fi
+    done
+
+    echo $node_leader
+}
+
+function nodeStatus {
+    echo ruok | nc $HOSTNAME:2181
+}
+
+function nodeRestart {
+    log "[ Restarting $MONIT_SERVICE_NAME ... ]"
+    wanted_rep=$(curl -Ss ${CONF_URL}/controllers/${POD_NAMESPACE}/${RC_NAME} | ${JQ_BIN} .node.value | ${JQ_BIN} .spec.replicas)
+
+    if [ "$(nodeStatus)" == "imok" ]; then
+        leader=$(getLeader)
+
+        if [ "$leader" != "none" ]; then
+            synced_follow=$(echo mntr | nc ${leader}:2181 | grep -w zk_synced_followers | cut -f2)
+         
+            while [ ${synced_follow} -le 1 ]; do
+                log "Only ${synced_follow} synced follower. Waiting ..."
+                sleep 5
+                synced_follow=$(echo mntr | nc ${leader}:2181 | grep -w zk_synced_followers | cut -f2)
+            done
+            log "${synced_follow} synced follower. Restarting ..."
+        fi
+    fi
+
+    /opt/monit/bin/monit restart $MONIT_SERVICE_NAME
+}
+
 function bootstrapZk {
     waitDeploy
 
@@ -121,4 +169,16 @@ function bootstrapZk {
         echo $myid
     fi
 }
+
+case "$1" in
+        "bootstrap")
+            bootstrapZk >> ${CONF_LOG} 2>&1
+        ;;
+        "restart")
+            nodeRestart >> ${CONF_LOG} 2>&1
+        ;;
+        *) echo "Usage: $0 restart|bootstrap"
+        ;;
+
+esac
 

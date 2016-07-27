@@ -13,4 +13,6 @@ ENV SERVICE_NAME=zk \
 # Add files
 ADD root /
 RUN cd ${SERVICE_VOLUME} && \
-    tar czvf ${SERVICE_ARCHIVE} * ; rm -rf ${SERVICE_VOLUME}/* 
+    chmod 755 ${SERVICE_VOLUME}/scripts/*.sh  ${SERVICE_VOLUME}/confd/bin/*.sh && \
+    tar czvf ${SERVICE_ARCHIVE} * && \ 
+    rm -rf ${SERVICE_VOLUME}/* 
