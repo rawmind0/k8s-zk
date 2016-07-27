@@ -6,6 +6,10 @@ ZK_MAX_CLIENT_CXNS=${ZK_MAX_CLIENT_CXNS:-"500"}
 ZK_SYNC_LIMIT=${ZK_SYNC_LIMIT:-"5"}
 ZK_TICK_TIME=${ZK_TICK_TIME:-"2000"}
 
+POD_NAME=${POD_NAME:-$HOSTNAME}
+POD_NAMESPACE=${POD_NAMESPACE:-"default"}
+RC_NAME=${RC_NAME:-$(echo $HOSTNAME | cut -d"-" -f1)}
+
 cat << EOF > ${CONF_HOME}/etc/conf.d/myid.toml
 [template]
 src = "myid.tmpl"
