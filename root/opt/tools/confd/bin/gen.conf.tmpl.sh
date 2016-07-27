@@ -32,7 +32,7 @@ keys = [
   "/",
 ]
 
-reload_cmd = "${SERVICE_HOME}/bin/zk-service.sh restart"
+reload_cmd = "${SERVICE_VOLUME}/scripts/zk-service.sh restart"
 EOF
 
 cat << EOF > ${CONF_HOME}/etc/templates/zoo.cfg.tmpl

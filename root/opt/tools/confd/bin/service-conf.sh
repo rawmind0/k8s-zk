@@ -25,14 +25,12 @@ function checkNetwork {
 function serviceBootstrap {
     log "[ Bootstraping ${SERVICE_NAME} template... ]"
 
-    source ${SERVICE_VOLUME}/scripts/bootstrap.sh
-
-    bootstrapZk
+    ${SERVICE_VOLUME}/scripts/zk-service.sh bootstrap
 }
 
 function serviceTemplate {
     log "[ Checking ${CONF_NAME} template... ]"
-    bash ${CONF_HOME}/bin/gen.conf.tmpl.sh
+    ${CONF_HOME}/bin/gen.conf.tmpl.sh
 }
 
 function serviceStart {
