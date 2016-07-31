@@ -101,6 +101,7 @@ function newZkid {
 
 function waitDeploy {
     log "[ Waiting replicas to be started ... ]"
+
     current_rep=$(curl -Ss ${CONF_URL}/controllers/${POD_NAMESPACE}/${RC_NAME} | ${JQ_BIN} .node.value | ${JQ_BIN} .status.replicas)
     wanted_rep=$(curl -Ss ${CONF_URL}/controllers/${POD_NAMESPACE}/${RC_NAME} | ${JQ_BIN} .node.value | ${JQ_BIN} .spec.replicas)
 
@@ -108,6 +109,24 @@ function waitDeploy {
         log "${current_rep} of ${wanted_rep} started replicas....waiting..."
         sleep 3
     done
+}
+
+function waitIds {
+    log "[ Waiting for all pods has zkid ... ]"
+
+    wanted_rep=$(curl -Ss ${CONF_URL}/controllers/${POD_NAMESPACE}/${RC_NAME} | ${JQ_BIN} .node.value | ${JQ_BIN} .spec.replicas)
+
+    while [ ${wanted_rep} -ne ${counter} ]; do
+        counter=0
+        for i in $(curl -Ss ${CONF_URL}/services/endpoints/${POD_NAMESPACE}/${RC_NAME} | ${JQ_BIN} .node.value | ${JQ_BIN} .subsets[0].addresses[].targetRef.name) ; do
+            id=$(curl -Ss ${CONF_URL}/pods/${POD_NAMESPACE}/${i} | ${JQ_BIN} .node.value | ${JQ_BIN} ${LABEL_ID})
+            if [ "$id" != "null"]; then
+                counter=$(expr $counter + 1)
+            fi
+        done
+        log "${counter} of ${wanted_rep} pods has zkid"
+    done
+
 }
 
 function getLeader {
@@ -153,6 +172,7 @@ function nodeRestart {
 
 function bootstrapZk {
     waitDeploy
+    waitIds
 
     myid=$(myZkid)
     counter=0
