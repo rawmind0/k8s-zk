@@ -1,3 +1,5 @@
+[![](https://images.microbadger.com/badges/image/rawmind/k8s-zk.svg)](https://microbadger.com/images/rawmind/k8s-zk "Get your own image badge on microbadger.com")
+
 k8s-zk
 ==============
 
